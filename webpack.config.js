@@ -32,6 +32,8 @@ module.exports = (env, argv) => {
         mode: mode,
         devtool: isProduction ? undefined : "eval-source-map",
 
+        target: isProduction ? 'browserslist' : 'web', // Workaround for https://github.com/webpack/webpack-dev-server/issues/2758
+
         plugins: isProduction ?
             plugins.concat([
                 new CleanWebpackPlugin(),
@@ -40,6 +42,7 @@ module.exports = (env, argv) => {
             ])
             : plugins.concat([
                 new webpack.HotModuleReplacementPlugin(),
+                // new ForkTsCheckerWebpackPlugin()
             ]),
 
         devServer: {
@@ -86,6 +89,11 @@ module.exports = (env, argv) => {
                     }
                 },
                 {
+                    test: /\.tsx?$/,
+                    use: { loader: 'ts-loader', options: { transpileOnly: false } },
+                    exclude: /node_modules/,
+                },
+                {
                     test: /\.(sass|scss|css)$/,
                     use: [
                         isProduction ? MiniCssExtractPlugin.loader : 'style-loader', 'css-loader',
@@ -119,7 +127,7 @@ module.exports = (env, argv) => {
                         {
                             loader: 'image-webpack-loader',
                             options: {
-                                disable: ! isProduction,
+                                disable: !isProduction,
                             }
                         }
                     ]
